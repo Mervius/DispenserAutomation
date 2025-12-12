@@ -6,13 +6,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import re.domi.dispenserautomation.DispenserTicker;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin extends World implements DispenserTicker
 {
     @Unique
-    private final ArrayList<Task> tasks = new ArrayList<>(10);
+    private final List<Task> tasks = new CopyOnWriteArrayList<>();
 
     @Override
     public void dispAuto_add(Task task)
@@ -21,9 +22,17 @@ public abstract class ServerWorldMixin extends World implements DispenserTicker
     }
 
     @Override
-    public void dispAuto_tick()
-    {
-        this.tasks.removeIf(current -> current.tick(this));
+    public void dispAuto_tick() {
+        for (Task task : tasks) {
+
+            // stop ticking if this chunk is unloading
+            if (!((ServerWorld) (Object) this).isChunkLoaded(task.dispenserPos))
+                continue;
+
+            if (task.tick(this)) {
+                tasks.remove(task); // safe in CopyOnWriteArrayList
+            }
+        }
     }
 
     protected ServerWorldMixin()
