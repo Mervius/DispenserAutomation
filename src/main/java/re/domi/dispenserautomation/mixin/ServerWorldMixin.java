@@ -26,7 +26,7 @@ public abstract class ServerWorldMixin extends World implements DispenserTicker
         for (Task task : tasks) {
 
             // stop ticking if this chunk is unloading
-            // I don't know if I should also be checking the position the dispenser interacts with as wel... we'll have to see if this causes issues.
+            // I don't know if I should also be checking the position the dispenser interacts with as well... we'll have to see if this causes issues.
             if (!((ServerWorld) (Object) this).isChunkLoaded(task.dispenserPos))
                 continue;
 
